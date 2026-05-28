@@ -124,7 +124,7 @@
     width: 1px; background: var(--line); margin: 4px 4px;
   }
 
-  main { padding: 24px 32px 80px; max-width: 1280px; margin: 0 auto; }
+  main { padding: 24px 32px 80px; max-width: 1600px; margin: 0; }
   .month {
     margin-bottom: 36px;
   }
@@ -148,6 +148,9 @@
   }
   @media (min-width: 1080px) {
     .events { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  @media (min-width: 1480px) {
+    .events { grid-template-columns: repeat(4, 1fr); }
   }
 
   /* Card backgrounds + borders per segment */
@@ -303,9 +306,9 @@
   <h1>Deeptech &amp; Semiconductor Events Radar</h1>
   <div class="subtitle">Maintained by Qube Advisors GmbH · Updated 28 May 2026 · 12-month rolling window</div>
   <div class="meta-row">
-    <div class="stat"><span class="num">30</span><span class="lbl">Events tracked</span></div>
-    <div class="stat"><span class="num">21</span><span class="lbl">Priority (score 3)</span></div>
-    <div class="stat"><span class="num">DE&nbsp;9 · NL&nbsp;3 · BE&nbsp;3 · ES&nbsp;2 · UK&nbsp;1 · FR&nbsp;1 · CH&nbsp;1 · NO&nbsp;1 · FI&nbsp;1 · PL&nbsp;1 · US&nbsp;3 · Asia&nbsp;3</span><span class="lbl">Geo split</span></div>
+    <div class="stat"><span class="num">31</span><span class="lbl">Events tracked</span></div>
+    <div class="stat"><span class="num">22</span><span class="lbl">Priority (score 3)</span></div>
+    <div class="stat"><span class="num">DE&nbsp;10 · NL&nbsp;3 · BE&nbsp;3 · ES&nbsp;2 · UK&nbsp;1 · FR&nbsp;1 · CH&nbsp;1 · NO&nbsp;1 · FI&nbsp;1 · PL&nbsp;1 · US&nbsp;3 · Asia&nbsp;3</span><span class="lbl">Geo split</span></div>
   </div>
 </header>
 
@@ -347,7 +350,7 @@
 
   <!-- JUNE 2026 -->
   <section class="month" data-month="2026-06">
-    <div class="month-head"><h2>June 2026</h2><span class="count">· 10 events</span></div>
+    <div class="month-head"><h2>June 2026</h2><span class="count">· 11 events</span></div>
     <div class="events">
 
       <article class="event-card" data-score="3" data-segment="defense" data-types="investor" data-geo="eu" data-topics="drones defense">
@@ -510,6 +513,30 @@
           <dl>
             <dt>Why</dt><dd>Strong overlap with the European integrated-photonics target universe.</dd>
             <dt>Link</dt><dd><a href="https://www.ecio-conference.org/">ecio-conference.org</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="semicon" data-types="conference-hybrid" data-geo="dach" data-topics="semiconductors quantum ai manufacturing">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Mon 15 – Wed 17 Jun 2026 (exhibition Tue 16)</div>
+        <div class="name">Silicon Saxony Days — 20th Edition</div>
+        <div class="city">Dresden</div>
+        <div class="venue-sub">International Airport Dresden · 9 thematic stages</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="targets">
+          <span class="targets-label">Expected exhibitors:</span>
+          <span class="target">Infineon</span><span class="target">GlobalFoundries</span><span class="target">X-FAB</span><span class="target">Bosch</span>
+        </div>
+        <div class="cost-line"><strong>1,000+ participants · 30%+ international</strong> · Topics: semis, AI, quantum, advanced manufacturing</div>
+        <div class="details">
+          <dl>
+            <dt>Topics</dt><dd>Semiconductors, AI, quantum, advanced manufacturing, cloud/software systems, supply chains</dd>
+            <dt>Why</dt><dd>20th edition. Dresden / Silicon Saxony cluster is Europe's largest semis-manufacturing region (Infineon, GlobalFoundries, X-FAB, Bosch megafab). Tier-1 venue for European semi M&amp;A buyer scoping in DACH.</dd>
+            <dt>Who</dt><dd>Silicon Saxony ecosystem (Infineon, GF, X-FAB, Bosch), Fraunhofer IPMS, TU Dresden cfaed, EU Chips Act stakeholders.</dd>
+            <dt>Format</dt><dd>Main stage + 9 thematic stages · Exhibition only on Tue 16 Jun</dd>
+            <dt>Link</dt><dd><a href="https://www.silicon-saxony-day.de/">silicon-saxony-day.de</a></dd>
           </dl>
         </div>
       </article>
