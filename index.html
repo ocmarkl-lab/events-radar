@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deeptech &amp; Semiconductor Events Radar — Qube Advisors GmbH</title>
+<style>
+  :root {
+    --bg:           #f7f7f5;
+    --surface:      #ffffff;
+    --ink:          #1a1f2b;
+    --ink-soft:     #3a4253;
+    --ink-mute:     #6b7484;
+    --line:         #dde0e6;
+    --line-strong:  #b9bec9;
+
+    --score3:       #14213d;
+    --score2:       #5b6677;
+    --score1:       #a8adb8;
+
+    /* Stronger segment palette — full card colour */
+    --seg-semicon:           hsl(210, 55%, 88%);
+    --seg-semicon-accent:    hsl(210, 60%, 28%);
+    --seg-semicon-border:    hsl(210, 45%, 75%);
+
+    --seg-photonics:         hsl(280, 40%, 90%);
+    --seg-photonics-accent:  hsl(280, 50%, 32%);
+    --seg-photonics-border:  hsl(280, 30%, 78%);
+
+    --seg-space:             hsl(225, 38%, 87%);
+    --seg-space-accent:      hsl(225, 55%, 26%);
+    --seg-space-border:      hsl(225, 32%, 73%);
+
+    --seg-defense:           hsl(10, 55%, 89%);
+    --seg-defense-accent:    hsl(10, 65%, 34%);
+    --seg-defense-border:    hsl(10, 45%, 76%);
+
+    --seg-quantum:           hsl(170, 42%, 87%);
+    --seg-quantum-accent:    hsl(170, 55%, 24%);
+    --seg-quantum-border:    hsl(170, 35%, 70%);
+
+    --seg-robotics:          hsl(35, 65%, 88%);
+    --seg-robotics-accent:   hsl(28, 60%, 32%);
+    --seg-robotics-border:   hsl(35, 50%, 73%);
+
+    --seg-deeptech:          hsl(45, 35%, 89%);
+    --seg-deeptech-accent:   hsl(45, 35%, 30%);
+    --seg-deeptech-border:   hsl(45, 30%, 75%);
+
+    --badge-new-bg:        #d8efde;  --badge-new-fg:        #1a5a32;
+    --badge-week-bg:       #fde3b8;  --badge-week-fg:       #6a3500;
+    --badge-coloc-bg:      #c4ded7;  --badge-coloc-fg:      #134741;
+    --badge-verify-bg:     #f5ecaf;  --badge-verify-fg:     #5a4900;
+    --badge-addon-bg:      #d9cdec;  --badge-addon-fg:      #3e2972;
+    --badge-us-bg:         #d6dff0;  --badge-us-fg:         #1c3260;
+    --badge-asia-bg:       #f0d9e3;  --badge-asia-fg:       #6a1543;
+    --badge-future-bg:     #ddd1ed;  --badge-future-fg:     #392163;
+    --badge-rename-bg:     #d4e4d8;  --badge-rename-fg:     #1d472d;
+
+    --target-bg:    #14213d;
+    --target-fg:    #ffffff;
+
+    --shadow:       0 1px 2px rgba(20,33,61,.05), 0 3px 10px rgba(20,33,61,.07);
+    --shadow-hover: 0 2px 4px rgba(20,33,61,.10), 0 10px 26px rgba(20,33,61,.13);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.45;
+    font-size: 15px;
+  }
+
+  header.page-head {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 28px 32px 22px;
+  }
+  header.page-head h1 {
+    font-size: 22px; font-weight: 600; margin: 0 0 6px; letter-spacing: -.01em;
+  }
+  header.page-head .subtitle {
+    color: var(--ink-soft); font-size: 14px; margin-bottom: 18px;
+  }
+  .meta-row {
+    display: flex; gap: 32px; flex-wrap: wrap; align-items: baseline;
+  }
+  .meta-row .stat { display: flex; flex-direction: column; }
+  .meta-row .stat .num { font-size: 22px; font-weight: 600; color: var(--ink); }
+  .meta-row .stat .lbl { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: .08em; }
+
+  .legend {
+    display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 32px;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 4px; }
+  .legend-item[data-segment="semicon"]       { background: var(--seg-semicon); color: var(--seg-semicon-accent); }
+  .legend-item[data-segment="photonics"]     { background: var(--seg-photonics); color: var(--seg-photonics-accent); }
+  .legend-item[data-segment="space"]         { background: var(--seg-space); color: var(--seg-space-accent); }
+  .legend-item[data-segment="defense"]       { background: var(--seg-defense); color: var(--seg-defense-accent); }
+  .legend-item[data-segment="quantum"]       { background: var(--seg-quantum); color: var(--seg-quantum-accent); }
+  .legend-item[data-segment="robotics"]      { background: var(--seg-robotics); color: var(--seg-robotics-accent); }
+  .legend-item[data-segment="deeptech-other"] { background: var(--seg-deeptech); color: var(--seg-deeptech-accent); }
+  .legend-item { font-weight: 600; letter-spacing: .03em; }
+
+  .filter-bar {
+    display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 32px;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .filter-bar button {
+    border: 1px solid var(--line-strong); background: var(--surface);
+    color: var(--ink-soft); padding: 6px 12px; border-radius: 999px;
+    font-size: 13px; cursor: pointer; transition: all .12s;
+    font-family: inherit;
+  }
+  .filter-bar button:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .filter-bar button.active {
+    background: var(--ink); color: var(--surface); border-color: var(--ink);
+  }
+  .filter-bar .group-sep {
+    width: 1px; background: var(--line); margin: 4px 4px;
+  }
+
+  main { padding: 24px 32px 80px; max-width: 1280px; margin: 0 auto; }
+  .month {
+    margin-bottom: 36px;
+  }
+  .month-head {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .month-head h2 {
+    font-size: 14px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink); margin: 0;
+  }
+  .month-head .count { color: var(--ink-mute); font-size: 12px; }
+
+  .events {
+    display: grid; gap: 12px;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 720px) {
+    .events { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 1080px) {
+    .events { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  /* Card backgrounds + borders per segment */
+  .event-card[data-segment="semicon"]        { background: var(--seg-semicon);   border-color: var(--seg-semicon-border); }
+  .event-card[data-segment="photonics"]      { background: var(--seg-photonics); border-color: var(--seg-photonics-border); }
+  .event-card[data-segment="space"]          { background: var(--seg-space);     border-color: var(--seg-space-border); }
+  .event-card[data-segment="defense"]        { background: var(--seg-defense);   border-color: var(--seg-defense-border); }
+  .event-card[data-segment="quantum"]        { background: var(--seg-quantum);   border-color: var(--seg-quantum-border); }
+  .event-card[data-segment="robotics"]       { background: var(--seg-robotics);  border-color: var(--seg-robotics-border); }
+  .event-card[data-segment="deeptech-other"] { background: var(--seg-deeptech);  border-color: var(--seg-deeptech-border); }
+
+  .event-card {
+    border: 1px solid;
+    border-radius: 12px; padding: 16px 18px;
+    box-shadow: var(--shadow);
+    transition: box-shadow .15s, transform .15s;
+    cursor: pointer;
+    position: relative;
+  }
+  .event-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+  .event-card[data-score="3"] { border-left-width: 4px; border-left-color: var(--score3); }
+  .event-card[data-score="2"] { border-left-width: 4px; border-left-color: var(--score2); }
+  .event-card[data-score="1"] { border-left-width: 4px; border-left-color: var(--score1); }
+
+  .segment-tag {
+    font-size: 9.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .14em;
+    margin-bottom: 6px;
+    display: inline-block;
+  }
+  .event-card[data-segment="semicon"]        .segment-tag { color: var(--seg-semicon-accent); }
+  .event-card[data-segment="photonics"]      .segment-tag { color: var(--seg-photonics-accent); }
+  .event-card[data-segment="space"]          .segment-tag { color: var(--seg-space-accent); }
+  .event-card[data-segment="defense"]        .segment-tag { color: var(--seg-defense-accent); }
+  .event-card[data-segment="quantum"]        .segment-tag { color: var(--seg-quantum-accent); }
+  .event-card[data-segment="robotics"]       .segment-tag { color: var(--seg-robotics-accent); }
+  .event-card[data-segment="deeptech-other"] .segment-tag { color: var(--seg-deeptech-accent); }
+
+  .event-card .date-line {
+    font-size: 12px; font-weight: 600; color: var(--ink-soft);
+    letter-spacing: .04em; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .event-card .name {
+    font-size: 15px; font-weight: 600; color: var(--ink);
+    margin-bottom: 8px; letter-spacing: -.005em;
+    line-height: 1.3;
+  }
+  .event-card .name.allowlist-italic { font-style: italic; color: var(--ink-soft); }
+
+  /* City — the prominent location header */
+  .event-card .city {
+    font-size: 21px; font-weight: 700;
+    color: var(--ink); letter-spacing: -.01em;
+    margin: 4px 0 2px;
+    line-height: 1.1;
+  }
+  .event-card .venue-sub {
+    font-size: 12.5px; color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+
+  .badge-row {
+    display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .badge {
+    font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+    letter-spacing: .04em; text-transform: uppercase; display: inline-flex;
+  }
+  .badge.new      { background: var(--badge-new-bg);      color: var(--badge-new-fg); }
+  .badge.week     { background: var(--badge-week-bg);     color: var(--badge-week-fg); }
+  .badge.coloc    { background: var(--badge-coloc-bg);    color: var(--badge-coloc-fg); }
+  .badge.verify   { background: var(--badge-verify-bg);   color: var(--badge-verify-fg); }
+  .badge.addon    { background: var(--badge-addon-bg);    color: var(--badge-addon-fg); }
+  .badge.us       { background: var(--badge-us-bg);       color: var(--badge-us-fg); }
+  .badge.asia     { background: var(--badge-asia-bg);     color: var(--badge-asia-fg); }
+  .badge.future   { background: var(--badge-future-bg);   color: var(--badge-future-fg); }
+  .badge.rename   { background: var(--badge-rename-bg);   color: var(--badge-rename-fg); }
+
+  .targets {
+    display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .target {
+    font-size: 10px; padding: 2px 7px; border-radius: 999px;
+    background: var(--target-bg); color: var(--target-fg);
+    font-weight: 500; letter-spacing: .02em;
+  }
+  .targets-label {
+    font-size: 10px; color: var(--ink-mute); text-transform: uppercase;
+    letter-spacing: .08em; margin-right: 4px; align-self: center;
+  }
+
+  .cost-line {
+    font-size: 12px; color: var(--ink-soft); margin-top: 8px;
+    padding-top: 8px; border-top: 1px dashed rgba(0,0,0,.12);
+  }
+  .cost-line strong { color: var(--ink); }
+
+  .details {
+    display: none;
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,.12);
+    font-size: 13px; color: var(--ink-soft);
+  }
+  .event-card.expanded .details { display: block; }
+  .details dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; }
+  .details dt { color: var(--ink-mute); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .details dd { margin: 0; color: var(--ink); font-size: 13px; }
+  .details a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-strong); }
+  .details a:hover { text-decoration-color: var(--ink); }
+
+  .score-dots {
+    position: absolute; top: 14px; right: 16px;
+    display: flex; gap: 3px;
+  }
+  .score-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(0,0,0,.15);
+  }
+  .score-dot.filled[data-score="3"] { background: var(--score3); }
+  .score-dot.filled[data-score="2"] { background: var(--score2); }
+  .score-dot.filled[data-score="1"] { background: var(--score1); }
+
+  .info-banner {
+    background: var(--badge-coloc-bg);
+    border-left: 3px solid var(--badge-coloc-fg);
+    color: var(--badge-coloc-fg);
+    padding: 10px 14px; border-radius: 6px;
+    margin-bottom: 14px; font-size: 13px;
+  }
+  .info-banner strong { font-weight: 700; }
+
+  footer {
+    border-top: 1px solid var(--line); margin-top: 40px;
+    padding: 20px 32px 30px; font-size: 12px; color: var(--ink-mute);
+    text-align: center;
+  }
+
+  @media print {
+    body { background: white; font-size: 11pt; }
+    header.page-head, footer { padding: 12pt 0; }
+    .filter-bar, .legend { display: none; }
+    .event-card { break-inside: avoid; box-shadow: none; }
+    .event-card .details { display: block; }
+    main { padding: 12pt 0; }
+    .month { margin-bottom: 16pt; }
+    .events { grid-template-columns: 1fr 1fr !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <h1>Deeptech &amp; Semiconductor Events Radar</h1>
+  <div class="subtitle">Maintained by Qube Advisors GmbH · Updated 28 May 2026 · 12-month rolling window</div>
+  <div class="meta-row">
+    <div class="stat"><span class="num">30</span><span class="lbl">Events tracked</span></div>
+    <div class="stat"><span class="num">21</span><span class="lbl">Priority (score 3)</span></div>
+    <div class="stat"><span class="num">DE&nbsp;9 · NL&nbsp;3 · BE&nbsp;3 · ES&nbsp;2 · UK&nbsp;1 · FR&nbsp;1 · CH&nbsp;1 · NO&nbsp;1 · FI&nbsp;1 · PL&nbsp;1 · US&nbsp;3 · Asia&nbsp;3</span><span class="lbl">Geo split</span></div>
+  </div>
+</header>
+
+<div class="legend">
+  <span class="legend-item" data-segment="semicon">Semicon</span>
+  <span class="legend-item" data-segment="photonics">Photonics</span>
+  <span class="legend-item" data-segment="space">Space</span>
+  <span class="legend-item" data-segment="defense">Defense</span>
+  <span class="legend-item" data-segment="quantum">Quantum</span>
+  <span class="legend-item" data-segment="robotics">Robotics</span>
+  <span class="legend-item" data-segment="deeptech-other">Deeptech / Other</span>
+</div>
+
+<nav class="filter-bar" id="filterBar">
+  <button data-filter="all" class="active">All</button>
+  <span class="group-sep"></span>
+  <button data-filter="score-3">Priority</button>
+  <span class="group-sep"></span>
+  <button data-filter="seg-semicon">Semicon</button>
+  <button data-filter="seg-photonics">Photonics</button>
+  <button data-filter="seg-space">Space</button>
+  <button data-filter="seg-defense">Defense</button>
+  <button data-filter="seg-quantum">Quantum</button>
+  <button data-filter="seg-robotics">Robotics</button>
+  <button data-filter="seg-deeptech-other">Deeptech/Other</button>
+  <span class="group-sep"></span>
+  <button data-filter="type-trade-show">Trade shows</button>
+  <button data-filter="type-investor">Investor</button>
+  <button data-filter="type-demo-day">Demo days</button>
+  <button data-filter="type-conference-hybrid">Hybrid</button>
+  <span class="group-sep"></span>
+  <button data-filter="geo-dach">DACH</button>
+  <button data-filter="geo-eu">EU non-DACH</button>
+  <button data-filter="geo-us">US</button>
+  <button data-filter="geo-asia">Asia</button>
+</nav>
+
+<main>
+
+  <!-- JUNE 2026 -->
+  <section class="month" data-month="2026-06">
+    <div class="month-head"><h2>June 2026</h2><span class="count">· 10 events</span></div>
+    <div class="events">
+
+      <article class="event-card" data-score="3" data-segment="defense" data-types="investor" data-geo="eu" data-topics="drones defense">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Defense</div>
+        <div class="date-line">Mon 1 – Tue 2 Jun 2026</div>
+        <div class="name">Tech Tour Drones Innovation</div>
+        <div class="city">Brussels</div>
+        <div class="venue-sub">Tech Tour curated investment tour</div>
+        <div class="badge-row"><span class="badge new">New</span><span class="badge week">This week</span></div>
+        <div class="cost-line">Curated investor tour · drones primary topic</div>
+        <div class="details">
+          <dl>
+            <dt>Topics</dt><dd>Drones, defense</dd>
+            <dt>Why</dt><dd>Tech Tour curated investment-tour format. Drones primary topic.</dd>
+            <dt>Link</dt><dd><a href="https://techtour.com/events/">techtour.com/events</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="deeptech-other" data-types="conference-hybrid" data-geo="eu" data-topics="deeptech photonics semiconductors quantum space biotech">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Deeptech</div>
+        <div class="date-line">Mon 8 – Fri 12 Jun 2026 (umbrella)</div>
+        <div class="name">Hello Tomorrow Deep Tech Days</div>
+        <div class="city">Amsterdam</div>
+        <div class="venue-sub">NDSM + Dutch tours (Wageningen / Delft / Enschede / Eindhoven)</div>
+        <div class="badge-row"><span class="badge new">New</span><span class="badge coloc">Wraps HT Summit</span></div>
+        <div class="cost-line">Investor Day 10 Jun · Financing the Future + Women in DT Matchmaking 11 Jun · ~20 partner side events</div>
+        <div class="details">
+          <dl>
+            <dt>Topics</dt><dd>Deeptech, photonics, semis, quantum, space, biotech</dd>
+            <dt>Why</dt><dd>Umbrella programme around Hello Tomorrow Summit. International delegations: Brazil, Finland, Japan, Australia.</dd>
+            <dt>Link</dt><dd><a href="https://hello-tomorrow.org/deep-tech-days/">hello-tomorrow.org/deep-tech-days</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="2" data-segment="deeptech-other" data-types="investor" data-geo="dach" data-topics="vc lp-gp">
+        <div class="score-dots"><span class="score-dot filled" data-score="2"></span><span class="score-dot filled" data-score="2"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Deeptech</div>
+        <div class="date-line">Mon 8 – Wed 10 Jun 2026</div>
+        <div class="name">SuperReturn Venture</div>
+        <div class="city">Berlin</div>
+        <div class="venue-sub">Hotel Palace · Investor (LP-GP)</div>
+        <div class="badge-row"><span class="badge rename">Renamed</span></div>
+        <div class="cost-line"><strong>~1,000+ LPs/GPs</strong> · LPEA code <code>FKR3667LPEA</code> 10% off</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Pre-SuperReturn LP-GP networking.</dd>
+            <dt>Note</dt><dd>Rebranded "SuperVenture" → "SuperReturn Venture" for 2026.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="photonics" data-types="investor" data-geo="eu" data-topics="photonics eu-institutional">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Photonics</div>
+        <div class="date-line">Tue 9 – Wed 10 Jun 2026</div>
+        <div class="name">Photonics21 Partnership Annual Meeting</div>
+        <div class="city">Brussels</div>
+        <div class="venue-sub">DoubleTree by Hilton Brussels City · EU photonics PPP</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="cost-line">New Strategic Research and Innovation Agenda → European Commission</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>EU photonics PPP annual gathering. Key venue for understanding direction of EU photonics funding.</dd>
+            <dt>Who</dt><dd>EC DG-RTD, Photonics21 board, national photonics-cluster leads.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="semicon" data-types="trade-show" data-geo="dach" data-topics="semiconductors power-electronics">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Tue 9 – Thu 11 Jun 2026</div>
+        <div class="name">PCIM Expo & Conference</div>
+        <div class="city">Nuremberg</div>
+        <div class="venue-sub">Messe Nuremberg · Power electronics</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="targets">
+          <span class="targets-label">Expected exhibitors:</span>
+          <span class="target">Infineon</span><span class="target">STMicro</span><span class="target">X-FAB</span><span class="target">Bosch</span>
+        </div>
+        <div class="cost-line"><strong>650+ exhibitors · 16,500 participants</strong> · New AI & Data Centers Stage 2026</div>
+        <div class="details">
+          <dl>
+            <dt>Topics</dt><dd>Power semis, SiC/GaN/IGBT, e-mobility, data-center power</dd>
+            <dt>Why</dt><dd>Largest international power-electronics expo. Direct fit for power-semi M&amp;A mandates.</dd>
+            <dt>Link</dt><dd><a href="https://pcim.mesago.com/nuernberg/en/">pcim.mesago.com</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="semicon" data-types="investor" data-geo="dach" data-topics="semiconductors executive">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Thu 11 Jun 2026 (single day)</div>
+        <div class="name">GSA European Executive Forum</div>
+        <div class="city">Munich</div>
+        <div class="venue-sub">Sofitel Munich Bayerpost · Semis exec leadership</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="cost-line">Single-day exec format · Capgemini/imec/ATREG/Amkor core sponsors</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>GSA's flagship European semis-leadership gathering. The room for semi-mandate corp-dev contacts.</dd>
+            <dt>Who</dt><dd>Semi-cap-eq, fabless, foundry CEOs/CFOs and corp dev (TSMC, Infineon, ASML, NXP, ARM, Bosch, imec partners).</dd>
+            <dt>Link</dt><dd><a href="https://www.gsaglobal.org/events/event/2026-eef/">gsaglobal.org — 2026 EEF</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="defense" data-types="investor" data-geo="dach" data-topics="defense deeptech vc">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Defense</div>
+        <div class="date-line">Thu 11 Jun 2026 (single day)</div>
+        <div class="name">SuperReturn Tech Sovereignty</div>
+        <div class="city">Berlin</div>
+        <div class="venue-sub">Hotel Palace · Defense / sovereignty</div>
+        <div class="badge-row"><span class="badge new">New</span><span class="badge addon">Add-on</span></div>
+        <div class="cost-line">£200 discount with combined SuperReturn Venture pass</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Day-after add-on to SuperReturn Venture. Defense / sovereignty themes.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="deeptech-other" data-types="conference-hybrid" data-geo="eu" data-topics="deeptech photonics semiconductors quantum space biotech">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Deeptech</div>
+        <div class="date-line">Thu 11 – Fri 12 Jun 2026</div>
+        <div class="name">Hello Tomorrow Global Summit</div>
+        <div class="city">Amsterdam</div>
+        <div class="venue-sub">NDSM-Plein 90C · Hybrid (3,000+ attendees, 125 exhibitors)</div>
+        <div class="badge-row"></div>
+        <div class="cost-line">Corporate €625 (from €1,250) · Investor €1,290 · CVC €1,450</div>
+        <div class="details">
+          <dl>
+            <dt>Tickets (EUR)</dt><dd>Corporate €625 · Investor €1,290 · CVC €1,450 · Ecosystem €95 · Startup €490 · Student €95</dd>
+            <dt>Why</dt><dd>Largest pan-European deeptech summit. Investor floor + startup showcase + corporate-VC scouts.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="photonics" data-types="conference-hybrid" data-geo="dach" data-topics="photonics">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Photonics</div>
+        <div class="date-line">Mon 15 – Wed 17 Jun 2026</div>
+        <div class="name">ECIO — European Conference on Integrated Optics</div>
+        <div class="city">Zurich</div>
+        <div class="venue-sub">ETH Zurich · Integrated photonics</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="targets">
+          <span class="targets-label">Expected exhibitors:</span>
+          <span class="target">LIGENTEC</span><span class="target">PHIX</span><span class="target">SMART Photonics</span>
+        </div>
+        <div class="cost-line">Europe's longest-running integrated-photonics conference</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Strong overlap with the European integrated-photonics target universe.</dd>
+            <dt>Link</dt><dd><a href="https://www.ecio-conference.org/">ecio-conference.org</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="defense" data-types="trade-show" data-geo="eu" data-topics="defense drones space">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Defense</div>
+        <div class="date-line">Mon 15 – Fri 19 Jun 2026</div>
+        <div class="name">Eurosatory</div>
+        <div class="city">Paris</div>
+        <div class="venue-sub">Paris Nord Villepinte, Halls 4 / 5a / 5b / 6</div>
+        <div class="badge-row"></div>
+        <div class="targets">
+          <span class="targets-label">Expected exhibitors:</span>
+          <span class="target">Helsing</span><span class="target">Quantum Systems</span><span class="target">ARX Robotics</span>
+        </div>
+        <div class="cost-line"><strong>Visitor €60–€120</strong> · 185,000+ sqm · Badge mandatory + colour-printed</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Largest European defense show. Primary venue for defense-tech M&amp;A buyer scoping.</dd>
+            <dt>Hours</dt><dd>Mon–Thu 09:00–17:00, Fri 09:00–15:00</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- SEP 2026 -->
+  <section class="month" data-month="2026-09">
+    <div class="month-head"><h2>September 2026</h2><span class="count">· 3 events</span></div>
+    <div class="events">
+
+      <article class="event-card" data-score="1" data-segment="semicon" data-types="trade-show" data-geo="asia" data-topics="semiconductors">
+        <div class="score-dots"><span class="score-dot filled" data-score="1"></span><span class="score-dot"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Wed 2 – Fri 4 Sep 2026</div>
+        <div class="name allowlist-italic">SEMICON Taiwan</div>
+        <div class="city">Taipei</div>
+        <div class="venue-sub">Nangang Exhibition Center</div>
+        <div class="badge-row"><span class="badge asia">Asia allowlist</span></div>
+        <div class="cost-line">TSMC ecosystem flagship</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Taiwan-buyer scoping (TSMC, UMC, Powerchip, ASE).</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="2" data-segment="space" data-types="investor" data-geo="eu" data-topics="space">
+        <div class="score-dots"><span class="score-dot filled" data-score="2"></span><span class="score-dot filled" data-score="2"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Space</div>
+        <div class="date-line">Thu 10 – Fri 11 Sep 2026</div>
+        <div class="name">Tech Tour Space</div>
+        <div class="city">Bodø</div>
+        <div class="venue-sub">Norway · Investment tour</div>
+        <div class="badge-row"></div>
+        <div class="cost-line">Andøya/Esrange launch ecosystem proximity</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Tech Tour space-tech edition.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="photonics" data-types="trade-show" data-geo="eu" data-topics="photonics optical-comms">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Photonics</div>
+        <div class="date-line">Sun 20 – Thu 24 Sep 2026 (exhibition 21-23)</div>
+        <div class="name">ECOC — European Conference on Optical Communication</div>
+        <div class="city">Malaga</div>
+        <div class="venue-sub">FYCMA Trade Fair and Congress Center</div>
+        <div class="badge-row"></div>
+        <div class="targets">
+          <span class="targets-label">Expected exhibitors:</span>
+          <span class="target">LIGENTEC</span><span class="target">PHIX</span><span class="target">SMART Photonics</span>
+        </div>
+        <div class="cost-line">EPIC VIP networking 21 Sep · Booth Tour 23 Sep · TechWatch 21-23 Sep</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Europe's largest optical-comms event. EPIC hosts VIP networking + young-talent booth tour + TechWatch.</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- OCT 2026 -->
+  <section class="month" data-month="2026-10">
+    <div class="month-head"><h2>October 2026</h2><span class="count">· 3 events</span></div>
+    <div class="events">
+
+      <article class="event-card" data-score="3" data-segment="quantum" data-types="investor" data-geo="dach" data-topics="quantum defense deeptech">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Quantum</div>
+        <div class="date-line">Thu 8 – Fri 9 Oct 2026</div>
+        <div class="name">Tech Tour Quantum & Defence</div>
+        <div class="city">Berlin</div>
+        <div class="venue-sub">Investment tour · Twin primary topics</div>
+        <div class="badge-row"></div>
+        <div class="cost-line">Tier-1 fit for deeptech M&amp;A mandates</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Twin primary topics (quantum + defense). Direct deeptech M&amp;A mandate fit.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="1" data-segment="semicon" data-types="trade-show" data-geo="us" data-topics="semiconductors">
+        <div class="score-dots"><span class="score-dot filled" data-score="1"></span><span class="score-dot"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Tue 13 – Thu 15 Oct 2026</div>
+        <div class="name allowlist-italic">SEMICON West</div>
+        <div class="city">San Francisco</div>
+        <div class="venue-sub">Moscone Center</div>
+        <div class="badge-row"><span class="badge us">US allowlist</span></div>
+        <div class="cost-line">LAM · KLA · Synopsys · Cadence routinely exhibit</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>US flagship semis trade show.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="2" data-segment="deeptech-other" data-types="investor" data-geo="eu" data-topics="deeptech vc">
+        <div class="score-dots"><span class="score-dot filled" data-score="2"></span><span class="score-dot filled" data-score="2"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Deeptech</div>
+        <div class="date-line">Mon 26 – Tue 27 Oct 2026</div>
+        <div class="name">Deep Tech Summit</div>
+        <div class="city">Warsaw</div>
+        <div class="venue-sub">CEE deeptech marketplace</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="cost-line">~1,000 participants · 250 startups · 150 investors · 300 scientists</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>CEE's largest deeptech investor + scientist marketplace.</dd>
+            <dt>Tickets</dt><dd>Business/Corporate €235-290 · Investor €290-350 · Startup €240-250 · Scientist €199</dd>
+            <dt>Link</dt><dd><a href="https://deeptechsummit.eu/">deeptechsummit.eu</a></dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- NOV 2026 -->
+  <section class="month" data-month="2026-11">
+    <div class="month-head"><h2>November 2026</h2><span class="count">· 6 events · 1 co-location</span></div>
+
+    <div class="info-banner">
+      <strong>Co-located · Tue 3 – Wed 4 Nov</strong> — PIC Summit Europe and Tech Tour Next Gen IC run same dates same city (Eindhoven). Combined visit possible.
+    </div>
+
+    <div class="events">
+
+      <article class="event-card" data-score="3" data-segment="photonics" data-types="conference-hybrid" data-geo="dach" data-topics="photonics semiconductors">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Photonics</div>
+        <div class="date-line">Tue 3 – Wed 4 Nov 2026</div>
+        <div class="name">PIC Summit Europe</div>
+        <div class="city">Eindhoven</div>
+        <div class="venue-sub">PhotonDelta flagship</div>
+        <div class="badge-row"><span class="badge coloc">Co-located</span></div>
+        <div class="targets">
+          <span class="targets-label">Expected exhibitors:</span>
+          <span class="target">LIGENTEC</span><span class="target">PHIX</span><span class="target">SMART Photonics</span>
+        </div>
+        <div class="cost-line">Global Photonics Engineering Contest finals · €2M + €100k prize</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>PhotonDelta-hosted Dutch integrated-photonics flagship.</dd>
+            <dt>Link</dt><dd><a href="https://www.photondelta.com/events/">photondelta.com/events</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="semicon" data-types="investor" data-geo="dach" data-topics="semiconductors">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Tue 3 – Wed 4 Nov 2026</div>
+        <div class="name">Tech Tour Next Gen IC</div>
+        <div class="city">Eindhoven</div>
+        <div class="venue-sub">Investment tour</div>
+        <div class="badge-row"><span class="badge coloc">Co-located</span></div>
+        <div class="cost-line">imec/PhotonDelta scaleup network</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Co-located with PIC Summit Europe.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="semicon" data-types="trade-show" data-geo="dach" data-topics="semiconductors">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Tue 10 – Fri 13 Nov 2026</div>
+        <div class="name">SEMICON Europa</div>
+        <div class="city">Munich</div>
+        <div class="venue-sub">co-located productronica</div>
+        <div class="badge-row"></div>
+        <div class="targets">
+          <span class="targets-label">Expected exhibitors:</span>
+          <span class="target">ASML</span><span class="target">Infineon</span><span class="target">Bosch</span><span class="target">STMicro</span><span class="target">X-FAB</span>
+        </div>
+        <div class="cost-line"><strong>8,000+ visitors</strong> · "Global Collaborations for European Economic Resilience"</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Largest European semis trade fair. Mandatory for European semi M&amp;A mandates.</dd>
+            <dt>Link</dt><dd><a href="https://www.semiconeuropa.org/">semiconeuropa.org</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="space" data-types="demo-day" data-geo="dach" data-topics="space deeptech">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Space</div>
+        <div class="date-line">Thu 12 Nov 2026</div>
+        <div class="name">INNOspace Masters — Final Event</div>
+        <div class="city">Berlin</div>
+        <div class="venue-sub">Futurium · Demo day / awards</div>
+        <div class="badge-row"></div>
+        <div class="cost-line">Challenges: DLR · ESA BIC · ESA BA · Airbus · Mercedes-Benz · OHB</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>DLR/AZO innovation competition.</dd>
+            <dt>Link</dt><dd><a href="https://innospace-masters.de/final-event/">innospace-masters.de/final-event</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="space" data-types="trade-show" data-geo="dach" data-topics="space">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Space</div>
+        <div class="date-line">Tue 17 – Thu 19 Nov 2026</div>
+        <div class="name">Space Tech Expo Europe</div>
+        <div class="city">Bremen</div>
+        <div class="venue-sub">MESSE BREMEN, Halls 4 / 5 / 6 / 7 / 4.1</div>
+        <div class="badge-row"><span class="badge verify">Verify</span></div>
+        <div class="cost-line"><strong>800+ exhibitors · 10,000+ professionals</strong></div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Europe's largest B2B space-tech trade fair.</dd>
+            <dt>Address</dt><dd>Findorffstrasse 101, 28215 Bremen</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="deeptech-other" data-types="conference-hybrid" data-geo="eu" data-topics="deeptech vc">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Deeptech</div>
+        <div class="date-line">Wed 18 – Thu 19 Nov 2026</div>
+        <div class="name">Slush</div>
+        <div class="city">Helsinki</div>
+        <div class="venue-sub">Helsinki Expo and Convention Centre</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="cost-line"><strong>13,000+ attendees</strong> · 600+ side events · 80% Nordics/UK/DACH/FR/BeNeLux/CEE</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>World's most founder-focused startup event. Massive volume of European deeptech founders + VCs in one place.</dd>
+            <dt>Link</dt><dd><a href="https://slush.org/">slush.org</a></dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- DEC 2026 -->
+  <section class="month" data-month="2026-12">
+    <div class="month-head"><h2>December 2026</h2><span class="count">· 1 event</span></div>
+    <div class="events">
+
+      <article class="event-card" data-score="1" data-segment="semicon" data-types="trade-show" data-geo="asia" data-topics="semiconductors">
+        <div class="score-dots"><span class="score-dot filled" data-score="1"></span><span class="score-dot"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Wed 9 – Fri 11 Dec 2026 (10:00 – 17:00)</div>
+        <div class="name allowlist-italic">SEMICON Japan</div>
+        <div class="city">Tokyo</div>
+        <div class="venue-sub">Tokyo Big Sight, Koto · Free entry</div>
+        <div class="badge-row"><span class="badge asia">Asia allowlist</span></div>
+        <div class="cost-line">Co-located: APCS · ADIS · Metrology & Inspection summits</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Japan flagship. Free admission.</dd>
+            <dt>Who</dt><dd>Tokyo Electron, SUMCO, Disco, Renesas, Sony, Asian fabless.</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- JAN-FEB 2027 -->
+  <section class="month" data-month="2027-01">
+    <div class="month-head"><h2>January – February 2027</h2><span class="count">· 2 events · US allowlist</span></div>
+    <div class="events">
+
+      <article class="event-card" data-score="1" data-segment="deeptech-other" data-types="trade-show" data-geo="us" data-topics="consumer-electronics semiconductors ai">
+        <div class="score-dots"><span class="score-dot filled" data-score="1"></span><span class="score-dot"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Deeptech</div>
+        <div class="date-line">Wed 6 – Sat 9 Jan 2027</div>
+        <div class="name allowlist-italic">CES</div>
+        <div class="city">Las Vegas</div>
+        <div class="venue-sub">Las Vegas Convention Center · 12+ official venues</div>
+        <div class="badge-row"><span class="badge new">New</span><span class="badge us">US allowlist</span></div>
+        <div class="cost-line">World's largest consumer-tech trade show</div>
+        <div class="details">
+          <dl>
+            <dt>Topics</dt><dd>Consumer electronics, semiconductors, AI, automotive</dd>
+            <dt>Why</dt><dd>Most semi primes show flagship product launches here.</dd>
+            <dt>Link</dt><dd><a href="https://www.ces.tech/">ces.tech</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="1" data-segment="photonics" data-types="trade-show" data-geo="us" data-topics="photonics">
+        <div class="score-dots"><span class="score-dot filled" data-score="1"></span><span class="score-dot"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Photonics</div>
+        <div class="date-line">Sat 30 Jan – Thu 4 Feb 2027</div>
+        <div class="name allowlist-italic">SPIE Photonics West</div>
+        <div class="city">San Francisco</div>
+        <div class="venue-sub">Moscone Center</div>
+        <div class="badge-row"><span class="badge us">US allowlist</span></div>
+        <div class="targets">
+          <span class="targets-label">Expected exhibitors:</span>
+          <span class="target">LIGENTEC</span><span class="target">PHIX</span><span class="target">SMART Photonics</span>
+        </div>
+        <div class="cost-line">BiOS Expo 30–31 Jan · Exhibition 2–4 Feb · Abstracts due ~22 Jul</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Largest global photonics trade show.</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- MAR 2027 -->
+  <section class="month" data-month="2027-03">
+    <div class="month-head"><h2>March 2027</h2><span class="count">· 3 events · European trade-show cluster</span></div>
+    <div class="events">
+
+      <article class="event-card" data-score="3" data-segment="semicon" data-types="trade-show" data-geo="eu" data-topics="semiconductors telecom ai">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Mon 1 – Thu 4 Mar 2027</div>
+        <div class="name">MWC Barcelona</div>
+        <div class="city">Barcelona</div>
+        <div class="venue-sub">Fira Gran Via · 8 halls / 200,000+ sqm</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="cost-line"><strong>2,900+ exhibitors · 105,000+ attendees</strong></div>
+        <div class="details">
+          <dl>
+            <dt>Topics</dt><dd>Semiconductors, telecom, AI</dd>
+            <dt>Why</dt><dd>World's largest connectivity / mobile / telecom-semi event. Direct fit for telecom-semi M&amp;A mandates.</dd>
+            <dt>Who</dt><dd>Mobile OEMs, telecom operators, modem/RF silicon (Qualcomm, MediaTek, Samsung S.LSI), Ministerial Programme delegations.</dd>
+            <dt>Link</dt><dd><a href="https://www.mwcbarcelona.com/">mwcbarcelona.com</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="robotics" data-types="conference-hybrid" data-geo="eu" data-topics="robotics ai">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Robotics</div>
+        <div class="date-line">Tue 2 – Thu 4 Mar 2027</div>
+        <div class="name">European Robotics Forum</div>
+        <div class="city">Birmingham</div>
+        <div class="venue-sub">ICC Birmingham</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="cost-line">1,000+ experts · EU robotics + AI community flagship</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>EU robotics + AI community flagship. KUKA + euRobotics ecosystem.</dd>
+            <dt>Who</dt><dd>European robotics OEMs (KUKA, ABB, Universal Robots, Fanuc EU), academic robotics labs, EU robotics-PPP.</dd>
+            <dt>Link</dt><dd><a href="https://erf2027.eu/">erf2027.eu</a></dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="event-card" data-score="3" data-segment="semicon" data-types="trade-show" data-geo="dach" data-topics="semiconductors embedded-systems iot">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Semicon</div>
+        <div class="date-line">Tue 16 – Thu 18 Mar 2027</div>
+        <div class="name">embedded world</div>
+        <div class="city">Nuremberg</div>
+        <div class="venue-sub">Messe Nuremberg · Embedded systems · 25th edition</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="cost-line"><strong>1,000 exhibitors · 30,000+ visitors · 36,000+ buyers</strong></div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>World's leading embedded-systems trade show. Direct fit for embedded-MCU/SoC/RTOS M&amp;A mandates.</dd>
+            <dt>Who</dt><dd>MCU/SoC primes (NXP, STM, Infineon, Renesas, TI, Nordic, Espressif), embedded-Linux/RTOS vendors, IoT module makers.</dd>
+            <dt>Link</dt><dd><a href="https://www.embedded-world.de/en">embedded-world.de</a></dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- JUN 2027 -->
+  <section class="month" data-month="2027-06">
+    <div class="month-head"><h2>June 2027</h2><span class="count">· 1 event</span></div>
+    <div class="events">
+
+      <article class="event-card" data-score="3" data-segment="robotics" data-types="trade-show" data-geo="dach" data-topics="robotics ai manufacturing">
+        <div class="score-dots"><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span><span class="score-dot filled" data-score="3"></span></div>
+        <div class="segment-tag">Robotics</div>
+        <div class="date-line">Tue 22 – Fri 25 Jun 2027</div>
+        <div class="name">automatica</div>
+        <div class="city">Munich</div>
+        <div class="venue-sub">Messe Munich · Biennial</div>
+        <div class="badge-row"><span class="badge new">New</span></div>
+        <div class="cost-line">World's leading smart-automation + robotics trade fair</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Industrial-robotics OEMs + cobot players + AI-vision systems.</dd>
+            <dt>Who</dt><dd>KUKA, ABB, Fanuc, Yaskawa, Universal Robots, automotive OEMs.</dd>
+            <dt>Link</dt><dd><a href="https://automatica-munich.com/en/">automatica-munich.com</a></dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- DEC 2027 — OUT OF WINDOW -->
+  <section class="month" data-month="2027-12">
+    <div class="month-head"><h2>December 2027</h2><span class="count">· 1 event · Out-of-window peek</span></div>
+    <div class="events">
+
+      <article class="event-card" data-score="1" data-segment="robotics" data-types="trade-show" data-geo="asia" data-topics="robotics">
+        <div class="score-dots"><span class="score-dot filled" data-score="1"></span><span class="score-dot"></span><span class="score-dot"></span></div>
+        <div class="segment-tag">Robotics</div>
+        <div class="date-line">Early Dec 2027 (TBC)</div>
+        <div class="name allowlist-italic">iREX — International Robot Exhibition</div>
+        <div class="city">Tokyo</div>
+        <div class="venue-sub">Tokyo Big Sight · Biennial</div>
+        <div class="badge-row"><span class="badge new">New</span><span class="badge asia">Asia allowlist</span><span class="badge future">Out of window</span></div>
+        <div class="cost-line">300+ exhibitors · 100,000+ visitors · Largest global robotics expo</div>
+        <div class="details">
+          <dl>
+            <dt>Why</dt><dd>Biennial (odd years).</dd>
+            <dt>Who</dt><dd>Fanuc, Yaskawa, Kawasaki, Mitsubishi, Doosan, Hyundai Robotics.</dd>
+            <dt>Link</dt><dd><a href="https://irex.jara.jp/">irex.jara.jp</a></dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Maintained by Qube Advisors GmbH · Auto-updated weekly · 30 events tracked<br>
+  <a href="https://qubeadvisors.de/" style="color: inherit;">qubeadvisors.de</a>
+</footer>
+
+<script>
+  document.querySelectorAll('.event-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') return;
+      card.classList.toggle('expanded');
+    });
+  });
+
+  const filterBar = document.getElementById('filterBar');
+  filterBar.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'BUTTON') return;
+    filterBar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+
+    const f = e.target.dataset.filter;
+    document.querySelectorAll('.event-card').forEach(card => {
+      let show = false;
+      if (f === 'all') show = true;
+      else if (f.startsWith('score-')) show = card.dataset.score === f.slice(6);
+      else if (f.startsWith('seg-'))   show = card.dataset.segment === f.slice(4);
+      else if (f.startsWith('type-'))  show = (card.dataset.types || '').split(' ').includes(f.slice(5));
+      else if (f.startsWith('geo-'))   show = card.dataset.geo === f.slice(4);
+      else if (f.startsWith('topic-')) show = (card.dataset.topics || '').split(' ').includes(f.slice(6));
+      card.style.display = show ? '' : 'none';
+    });
+
+    document.querySelectorAll('.month').forEach(m => {
+      const anyVisible = [...m.querySelectorAll('.event-card')].some(c => c.style.display !== 'none');
+      m.style.display = anyVisible ? '' : 'none';
+    });
+  });
+</script>
+
+</body>
+</html>
