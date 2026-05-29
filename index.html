@@ -278,7 +278,7 @@
 
   /* Attending toggle + state */
   .attend-btn {
-    margin-top: 12px; width: 100%;
+    margin-top: 14px; width: 100%;
     border: 1px solid var(--line-strong); background: var(--surface);
     color: var(--ink-soft); padding: 8px 12px; border-radius: 8px;
     font-size: 12.5px; font-weight: 600; font-family: inherit;
@@ -330,6 +330,7 @@
     main { padding: 12pt 0; }
     .month { margin-bottom: 16pt; }
     .events { grid-template-columns: 1fr 1fr !important; }
+    .attend-btn { display: none; }
   }
 </style>
 </head>
@@ -1100,7 +1101,9 @@
       refreshAttendCount();
       if (currentFilter === 'attending') applyFilter('attending');
     });
-    card.appendChild(btn);
+    // Discreet: the toggle lives at the bottom of the expandable details.
+    // The attending state itself (ring + ribbon) is always visible on the card.
+    (card.querySelector('.details') || card).appendChild(btn);
 
     card.addEventListener('click', (e) => {
       if (e.target.tagName === 'A' || e.target.closest('.attend-btn')) return;
