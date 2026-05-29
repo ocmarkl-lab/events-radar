@@ -1054,7 +1054,23 @@
 </footer>
 
 <script>
-  // ---- Attending (persisted per-device in localStorage) ----
+  // ===========================================================================
+  // Cross-device sync config — paste your Supabase project URL + anon key here.
+  // Until both are filled, the radar runs in local-only mode (this browser only).
+  // Setup SQL is documented in the repo. Table: public.attending(id text pk,
+  // marked bool, updated_at timestamptz). RLS open (select/insert/update = true).
+  // ===========================================================================
+  const SUPABASE_URL = '';       // e.g. 'https://abcd1234.supabase.co'
+  const SUPABASE_ANON_KEY = '';  // the public anon key
+  const SYNC = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+  const SB_REST = () => SUPABASE_URL + '/rest/v1/attending';
+  const sbHeaders = () => ({
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json',
+  });
+
+  // ---- Local cache (instant UI + offline fallback) ----
   const ATTEND_KEY = 'eventsRadar.attending';
   const loadAttending = () => {
     try { return new Set(JSON.parse(localStorage.getItem(ATTEND_KEY)) || []); }
@@ -1073,12 +1089,35 @@
     return slugify(name + '|' + date);
   };
 
+  // ---- Remote sync (Supabase REST) ----
+  async function fetchRemote() {
+    if (!SYNC) return null;
+    try {
+      const r = await fetch(SB_REST() + '?select=id&marked=eq.true', { headers: sbHeaders() });
+      if (!r.ok) return null;
+      return new Set((await r.json()).map(x => x.id));
+    } catch (e) { return null; }
+  }
+  async function pushRemote(id, marked) {
+    if (!SYNC) return;
+    try {
+      await fetch(SB_REST(), {
+        method: 'POST',
+        headers: Object.assign(sbHeaders(), { 'Prefer': 'resolution=merge-duplicates' }),
+        body: JSON.stringify({ id, marked, updated_at: new Date().toISOString() }),
+      });
+    } catch (e) { /* offline: local cache still holds the change */ }
+  }
+
   const attendCountEl = document.getElementById('attendCount');
   const refreshAttendCount = () => {
     attendCountEl.textContent = document.querySelectorAll('.event-card.attending').length;
   };
 
-  document.querySelectorAll('.event-card').forEach(card => {
+  const cards = [...document.querySelectorAll('.event-card')];
+  const relabel = {};   // id -> () => update that card's button label
+
+  cards.forEach(card => {
     const id = cardId(card);
     card.dataset.id = id;
 
@@ -1089,6 +1128,7 @@
       btn.textContent = on ? '★ Attending' : '☆ Mark attending';
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     };
+    relabel[id] = sync;
     if (attending.has(id)) card.classList.add('attending');
     sync();
 
@@ -1100,6 +1140,7 @@
       sync();
       refreshAttendCount();
       if (currentFilter === 'attending') applyFilter('attending');
+      pushRemote(id, on);
     });
     // Discreet: the toggle lives at the bottom of the expandable details.
     // The attending state itself (ring + ribbon) is always visible on the card.
@@ -1111,6 +1152,28 @@
     });
   });
   refreshAttendCount();
+
+  // Apply an authoritative set from the server to the DOM + local cache.
+  function applyAttendingSet(set) {
+    cards.forEach(card => {
+      const on = set.has(card.dataset.id);
+      card.classList.toggle('attending', on);
+      if (relabel[card.dataset.id]) relabel[card.dataset.id]();
+    });
+    attending.clear();
+    set.forEach(x => attending.add(x));
+    saveAttending(attending);
+    refreshAttendCount();
+    if (currentFilter === 'attending') applyFilter('attending');
+  }
+
+  // Pull on load, on tab focus, and every 60s so devices stay in sync.
+  if (SYNC) {
+    const pull = async () => { const r = await fetchRemote(); if (r) applyAttendingSet(r); };
+    pull();
+    window.addEventListener('focus', pull);
+    setInterval(pull, 60000);
+  }
 
   // ---- Filters ----
   let currentFilter = 'all';
