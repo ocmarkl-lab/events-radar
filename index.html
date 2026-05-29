@@ -1060,8 +1060,8 @@
   // Setup SQL is documented in the repo. Table: public.attending(id text pk,
   // marked bool, updated_at timestamptz). RLS open (select/insert/update = true).
   // ===========================================================================
-  const SUPABASE_URL = '';       // e.g. 'https://abcd1234.supabase.co'
-  const SUPABASE_ANON_KEY = '';  // the public anon key
+  const SUPABASE_URL = 'https://yukkgodqmnfnauzdqfxs.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_my0tc4MkJNVCMos6KxjI0w_dQJnj2sH';
   const SYNC = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
   const SB_REST = () => SUPABASE_URL + '/rest/v1/attending';
   const sbHeaders = () => ({
