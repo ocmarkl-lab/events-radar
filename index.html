@@ -60,6 +60,9 @@
     --target-bg:    #14213d;
     --target-fg:    #ffffff;
 
+    --attend:       #1f8a4c;
+    --attend-dark:  #146336;
+
     --shadow:       0 1px 2px rgba(20,33,61,.05), 0 3px 10px rgba(20,33,61,.07);
     --shadow-hover: 0 2px 4px rgba(20,33,61,.10), 0 10px 26px rgba(20,33,61,.13);
   }
@@ -273,6 +276,36 @@
   .score-dot.filled[data-score="2"] { background: var(--score2); }
   .score-dot.filled[data-score="1"] { background: var(--score1); }
 
+  /* Attending toggle + state */
+  .attend-btn {
+    margin-top: 12px; width: 100%;
+    border: 1px solid var(--line-strong); background: var(--surface);
+    color: var(--ink-soft); padding: 8px 12px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 600; font-family: inherit;
+    letter-spacing: .03em; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .12s;
+  }
+  .attend-btn:hover { border-color: var(--attend); color: var(--attend-dark); }
+  .event-card.attending .attend-btn {
+    background: var(--attend); border-color: var(--attend); color: #fff;
+  }
+  .event-card.attending .attend-btn:hover { background: var(--attend-dark); color: #fff; }
+
+  .event-card.attending {
+    outline: 3px solid var(--attend);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-hover);
+  }
+  .event-card.attending::before {
+    content: "★ ATTENDING";
+    position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
+    background: var(--attend); color: #fff;
+    font-size: 9px; font-weight: 700; letter-spacing: .14em;
+    padding: 2px 10px 3px; border-radius: 0 0 6px 6px;
+    z-index: 3;
+  }
+
   .info-banner {
     background: var(--badge-coloc-bg);
     border-left: 3px solid var(--badge-coloc-fg);
@@ -308,6 +341,7 @@
   <div class="meta-row">
     <div class="stat"><span class="num">32</span><span class="lbl">Events tracked</span></div>
     <div class="stat"><span class="num">23</span><span class="lbl">Priority (score 3)</span></div>
+    <div class="stat"><span class="num" id="attendCount" style="color: var(--attend-dark);">0</span><span class="lbl">Attending</span></div>
     <div class="stat"><span class="num">DE&nbsp;11 · NL&nbsp;3 · BE&nbsp;3 · ES&nbsp;2 · UK&nbsp;1 · FR&nbsp;1 · CH&nbsp;1 · NO&nbsp;1 · FI&nbsp;1 · PL&nbsp;1 · US&nbsp;3 · Asia&nbsp;3</span><span class="lbl">Geo split</span></div>
   </div>
 </header>
@@ -326,6 +360,7 @@
   <button data-filter="all" class="active">All</button>
   <span class="group-sep"></span>
   <button data-filter="score-3">Priority</button>
+  <button data-filter="attending">★ Attending</button>
   <span class="group-sep"></span>
   <button data-filter="seg-semicon">Semicon</button>
   <button data-filter="seg-photonics">Photonics</button>
@@ -1018,23 +1053,70 @@
 </footer>
 
 <script>
+  // ---- Attending (persisted per-device in localStorage) ----
+  const ATTEND_KEY = 'eventsRadar.attending';
+  const loadAttending = () => {
+    try { return new Set(JSON.parse(localStorage.getItem(ATTEND_KEY)) || []); }
+    catch (e) { return new Set(); }
+  };
+  const saveAttending = (set) => {
+    try { localStorage.setItem(ATTEND_KEY, JSON.stringify([...set])); } catch (e) {}
+  };
+  const attending = loadAttending();
+
+  // Stable id per card from its name (+ date as tiebreaker).
+  const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const cardId = (card) => {
+    const name = (card.querySelector('.name')?.textContent || '').trim();
+    const date = (card.querySelector('.date-line')?.textContent || '').trim();
+    return slugify(name + '|' + date);
+  };
+
+  const attendCountEl = document.getElementById('attendCount');
+  const refreshAttendCount = () => {
+    attendCountEl.textContent = document.querySelectorAll('.event-card.attending').length;
+  };
+
   document.querySelectorAll('.event-card').forEach(card => {
+    const id = cardId(card);
+    card.dataset.id = id;
+
+    const btn = document.createElement('button');
+    btn.className = 'attend-btn';
+    const sync = () => {
+      const on = card.classList.contains('attending');
+      btn.textContent = on ? '★ Attending' : '☆ Mark attending';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    };
+    if (attending.has(id)) card.classList.add('attending');
+    sync();
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const on = card.classList.toggle('attending');
+      if (on) attending.add(id); else attending.delete(id);
+      saveAttending(attending);
+      sync();
+      refreshAttendCount();
+      if (currentFilter === 'attending') applyFilter('attending');
+    });
+    card.appendChild(btn);
+
     card.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') return;
+      if (e.target.tagName === 'A' || e.target.closest('.attend-btn')) return;
       card.classList.toggle('expanded');
     });
   });
+  refreshAttendCount();
 
-  const filterBar = document.getElementById('filterBar');
-  filterBar.addEventListener('click', (e) => {
-    if (e.target.tagName !== 'BUTTON') return;
-    filterBar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-    e.target.classList.add('active');
-
-    const f = e.target.dataset.filter;
+  // ---- Filters ----
+  let currentFilter = 'all';
+  const applyFilter = (f) => {
+    currentFilter = f;
     document.querySelectorAll('.event-card').forEach(card => {
       let show = false;
       if (f === 'all') show = true;
+      else if (f === 'attending') show = card.classList.contains('attending');
       else if (f.startsWith('score-')) show = card.dataset.score === f.slice(6);
       else if (f.startsWith('seg-'))   show = card.dataset.segment === f.slice(4);
       else if (f.startsWith('type-'))  show = (card.dataset.types || '').split(' ').includes(f.slice(5));
@@ -1047,6 +1129,14 @@
       const anyVisible = [...m.querySelectorAll('.event-card')].some(c => c.style.display !== 'none');
       m.style.display = anyVisible ? '' : 'none';
     });
+  };
+
+  const filterBar = document.getElementById('filterBar');
+  filterBar.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'BUTTON') return;
+    filterBar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    applyFilter(e.target.dataset.filter);
   });
 </script>
 
