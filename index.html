@@ -292,6 +292,19 @@
   }
   .event-card.attending .attend-btn:hover { background: var(--attend-dark); color: #fff; }
 
+  /* Calendar export — only shown on cards you're attending */
+  .export-btn {
+    margin-top: 8px; width: 100%;
+    border: 1px solid var(--attend); background: var(--surface);
+    color: var(--attend-dark); padding: 7px 12px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; font-family: inherit;
+    letter-spacing: .03em; cursor: pointer;
+    display: none; align-items: center; justify-content: center; gap: 6px;
+    transition: all .12s;
+  }
+  .export-btn:hover { background: var(--attend); color: #fff; }
+  .event-card.attending .export-btn { display: flex; }
+
   .event-card.attending {
     outline: 3px solid var(--attend);
     outline-offset: 2px;
@@ -331,6 +344,7 @@
     .month { margin-bottom: 16pt; }
     .events { grid-template-columns: 1fr 1fr !important; }
     .attend-btn { display: none; }
+    .export-btn { display: none !important; }
   }
 </style>
 </head>
@@ -1089,6 +1103,74 @@
     return slugify(name + '|' + date);
   };
 
+  // ---- Calendar (.ics) export for attending cards ----
+  const MONTHS = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11 };
+  // Parse a .date-line like "Tue 20 – Thu 22 Oct 2026" or "Thu 11 Jun 2026 (single day)"
+  // into { start, endExclusive } UTC Dates for an all-day VEVENT. Returns null if unparseable.
+  function parseEventDates(text) {
+    let s = text.replace(/\([^)]*\)/g, ' ').replace(/[–—]/g, '-').toLowerCase();
+    const ym = s.match(/\b(20\d{2})\b/);
+    const year = ym ? parseInt(ym[1], 10) : new Date().getUTCFullYear();
+    s = s.replace(/\b20\d{2}\b/g, ' ');
+    const seg = (str) => {
+      const mm = str.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/);
+      const dd = str.match(/\b([0-3]?\d)\b/);
+      return { mon: mm ? MONTHS[mm[1]] : null, day: dd ? parseInt(dd[1], 10) : null };
+    };
+    const parts = s.split('-');
+    const start = seg(parts[0]);
+    const end = parts[1] ? seg(parts[1]) : start;
+    const endMon = end.mon != null ? end.mon : start.mon;
+    const startMon = start.mon != null ? start.mon : endMon;
+    if (endMon == null) return null;
+    const startDay = start.day || 1;
+    const endDay = end.day || startDay;
+    const startYear = startMon > endMon ? year - 1 : year;   // handles Dec–Jan spans
+    const startDate = new Date(Date.UTC(startYear, startMon, startDay));
+    const endExclusive = new Date(Date.UTC(year, endMon, endDay + 1)); // DTEND is exclusive
+    return { start: startDate, endExclusive };
+  }
+  const pad = (n) => String(n).padStart(2, '0');
+  const ymd = (d) => '' + d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate());
+  const escICS = (s) => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  function buildICS(card) {
+    const name = (card.querySelector('.name')?.textContent || 'Event').trim();
+    const city = (card.querySelector('.city')?.textContent || '').trim();
+    const venue = (card.querySelector('.venue-sub')?.textContent || '').trim();
+    const dateLine = (card.querySelector('.date-line')?.textContent || '').trim();
+    const linkEl = card.querySelector('.details a');
+    const url = linkEl ? linkEl.href : '';
+    const d = parseEventDates(dateLine);
+    if (!d) return null;
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const loc = [city, venue].filter(Boolean).join(', ');
+    const desc = dateLine + (url ? '\n' + url : '');
+    const lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Events Radar//Qube Advisors//EN', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      'UID:' + card.dataset.id + '@events-radar',
+      'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + ymd(d.start),
+      'DTEND;VALUE=DATE:' + ymd(d.endExclusive),
+      'SUMMARY:' + escICS(name),
+      loc ? 'LOCATION:' + escICS(loc) : null,
+      'DESCRIPTION:' + escICS(desc),
+      url ? 'URL:' + url : null,
+      'END:VEVENT', 'END:VCALENDAR',
+    ].filter(Boolean);
+    return lines.join('\r\n');
+  }
+  function downloadICS(card) {
+    const ics = buildICS(card);
+    if (!ics) { alert('Could not read the date for this event.'); return; }
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = card.dataset.id + '.ics';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
   // ---- Remote sync (Supabase REST) ----
   async function fetchRemote() {
     if (!SYNC) return null;
@@ -1144,10 +1226,18 @@
     });
     // Discreet: the toggle lives at the bottom of the expandable details.
     // The attending state itself (ring + ribbon) is always visible on the card.
-    (card.querySelector('.details') || card).appendChild(btn);
+    const slot = card.querySelector('.details') || card;
+    slot.appendChild(btn);
+
+    // Calendar export — rendered for every card but only visible when attending.
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'export-btn';
+    exportBtn.textContent = '⤓ Add to calendar';
+    exportBtn.addEventListener('click', (e) => { e.stopPropagation(); downloadICS(card); });
+    slot.appendChild(exportBtn);
 
     card.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A' || e.target.closest('.attend-btn')) return;
+      if (e.target.tagName === 'A' || e.target.closest('.attend-btn') || e.target.closest('.export-btn')) return;
       card.classList.toggle('expanded');
     });
   });
